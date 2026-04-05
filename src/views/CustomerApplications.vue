@@ -28,11 +28,89 @@
         </div>
       </div>
 
+      <v-dialog v-model="showDisclaimer" max-width="680" persistent >
+  <v-card class="pa-6">
+    
+    <div class="text-center mb-4">
+      <v-icon size="48" color="primary">mdi-information-outline</v-icon>
+      <h2 class="text-h6 mt-2 font-weight-bold">
+        Important Disclaimer
+      </h2>
+    </div>
+
+    <v-card-text class="text-body-2 pa-0">
+  
+  <div
+    style="max-height: 300px; overflow-y: auto; padding: 16px; line-height: 1.7; color: #374151;"
+    @scroll="handleScroll"
+  >
+    <p>
+      To support the submission of your account opening documents to the preferred bank,
+      enabling the bank to open an account for you for facility disbursement.
+    </p>
+
+    <p class="mt-3">
+      Please note: All required KYC documents will be reviewed and verified before your
+      account number is issued. This process takes <strong>2 to 24 hours</strong> after submission.
+    </p>
+
+    <p class="mt-3 font-weight-medium">Before you proceed, ensure you have the following ready:</p>
+
+    <ul class="mt-2 ml-4">
+      <li>A valid means of identification (NIN or International Passport)</li>
+      <li>A recent passport photograph, taken with your phone</li>
+      <li>A utility bill, not older than 3 months</li>
+      <li>Your signature on a plain sheet, snapped and uploaded</li>
+    </ul>
+
+    <v-divider class="my-4"></v-divider>
+
+    <p class="font-weight-bold">Disclaimer</p>
+
+    <p>
+      By proceeding, you confirm that you understand and accept this process.
+      You authorize <strong>Paratus Banca Ltd</strong> to submit your details/data and
+      generate an account with a preferred partner bank for the purpose of facility
+      disbursement.
+    </p>
+
+    <p class="mt-2">
+      You confirm that you are aware of the requirements, verification steps, and timelines
+      involved, and that the information provided is accurate.
+    </p>
+  </div>
+
+</v-card-text>
+
+    <v-card-actions class="justify-end mt-4">
+      <v-btn
+        variant="text"
+        color="grey"
+        @click="showDisclaimer = false"
+      >
+        Cancel
+      </v-btn>
+
+      <v-btn
+        :disabled="!scrolledToBottom"
+        color="primary"
+        variant="flat"
+        @click="acceptDisclaimer"
+      >
+        I Understand & Continue
+      </v-btn>
+    </v-card-actions>
+
+  </v-card>
+</v-dialog>
       <!-- Notice banner -->
-      <div class="ob-notice">
+       <div class="ob-body">
+        <div class="ob-notice">
         <v-icon class="ob-notice-icon" size="18">mdi-information-outline</v-icon>
-        <span>All KYC documents will be thoroughly reviewed before your account number is issued — within <strong>2–4 hours</strong> of submission.</span>
+        <span>All KYC documents will be thoroughly reviewed before your account number is issued — within <strong>2 – 24 hours</strong> of submission.</span>
       </div>
+       </div>
+      
 
       <!-- Form Body -->
       <div class="ob-body">
@@ -88,30 +166,7 @@
               </div>
             </div>
 
-            <div class="ob-grid-2">
-              <v-text-field
-                v-model="form.bvn"
-                label="BVN (Bank Verification Number)"
-                variant="outlined"
-                density="comfortable"
-                :rules="[required, bvnRule]"
-                maxlength="11"
-                hint="11-digit BVN"
-                persistent-hint
-                class="ob-field"
-              />
-              <v-text-field
-                v-model="form.nin"
-                label="NIN (National Identification Number)"
-                variant="outlined"
-                density="comfortable"
-                :rules="[required, ninRule]"
-                maxlength="11"
-                hint="11-digit NIN"
-                persistent-hint
-                class="ob-field"
-              />
-            </div>
+            
 
             <div class="ob-grid-3">
               <v-text-field
@@ -184,6 +239,31 @@
               />
             </div>
 
+            <div class="ob-grid-2">
+              <v-text-field
+                v-model="form.bvn"
+                label="BVN (Bank Verification Number)"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required, bvnRule]"
+                maxlength="11"
+                hint="11-digit BVN"
+                persistent-hint
+                class="ob-field"
+              />
+              <v-text-field
+                v-model="form.nin"
+                label="NIN (National Identification Number)"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required, ninRule]"
+                maxlength="11"
+                hint="11-digit NIN"
+                persistent-hint
+                class="ob-field"
+              />
+            </div>
+
             <div class="ob-card-info">
               <div class="ob-card-info-title">
                 <v-icon size="18" class="mr-1">mdi-sim-outline</v-icon>
@@ -228,6 +308,14 @@
               <v-text-field
                 v-model="form.address.town_village"
                 label="Town / Village"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="ob-field"
+              />
+              <v-text-field
+                v-model="form.address.lga"
+                label="Local government area"
                 variant="outlined"
                 density="comfortable"
                 :rules="[required]"
@@ -338,6 +426,14 @@
                 :rules="[required]"
                 class="ob-field"
               />
+              <v-text-field
+                v-model="form.next_of_kin.address"
+                label="Address"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="ob-field"
+              />
             </div>
             <v-text-field
               v-model="form.next_of_kin.phone_number"
@@ -364,7 +460,6 @@
               <div class="ob-radio-label">Employment Status <span class="ob-required">*</span></div>
               <v-radio-group v-model="form.employment.employment_status" inline :rules="[required]" hide-details="auto">
                 <v-radio label="Employed"       value="employed"       color="primary" />
-                <v-radio label="Unemployed"     value="unemployed"     color="primary" />
                 <v-radio label="Student"        value="student"        color="primary" />
                 <v-radio label="Business Owner" value="business_owner" color="primary" />
               </v-radio-group>
@@ -489,6 +584,17 @@
               class="ob-field"
               style="max-width: 380px"
             />
+            <v-select
+  v-model="form.pof_facility"
+  :items="banks"
+  item-title="name"
+  item-value="id"
+  label="Select an agreed bank"
+  variant="outlined"
+  density="comfortable"
+  class="ob-field"
+  style="max-width: 380px"
+/>
           </div>
         </div>
 
@@ -646,8 +752,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { supabase } from '@/services/supabase'
+const showDisclaimer = ref(false)
+const disclaimerAccepted = ref(false)
+const acceptDisclaimer = () => {
+  disclaimerAccepted.value = true
+  showDisclaimer.value = false
+}
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 const steps = [
@@ -659,7 +771,25 @@ const steps = [
   { label: 'Review' },
 ]
 const currentStep = ref(0)
+const banks = ref([])
+const banksLoading = ref(false)
+const fetchBanks = async () => {
+  banksLoading.value = true
 
+  const { data, error } = await supabase
+    .from('banks')
+    .select('id, name')
+    .order('name')
+
+  if (!error) banks.value = data || []
+  else showSnack('Failed to load banks')
+
+  banksLoading.value = false
+}
+onMounted(() => {
+  fetchBanks()
+  showDisclaimer.value = true
+})
 // ── One ref per step form ─────────────────────────────────────────────────────
 // THE FIX: each v-form gets its own ref so .validate() only touches that
 // step's fields — not every field in the whole wizard.
@@ -705,6 +835,7 @@ const form = reactive({
   address: {
     full_address: '',
     town_village: '',
+    lga: '',
     state: '',
     roof_color: '',
     gate_color: '',
@@ -716,6 +847,7 @@ const form = reactive({
     full_name: '',
     relationship: null,
     date_of_birth: '',
+    address: '',
     place_of_birth: '',
     phone_number: '',
   },
@@ -798,8 +930,17 @@ const validateCurrentStep = async () => {
 const goToStep = (i) => {
   if (i < currentStep.value) currentStep.value = i
 }
-
+const scrolledToBottom = ref(false)
+const handleScroll = (e) => {
+  const el = e.target
+  scrolledToBottom.value =
+    el.scrollTop + el.clientHeight >= el.scrollHeight - 10
+}
 const nextStep = async () => {
+  if (!disclaimerAccepted.value) {
+    showDisclaimer.value = true
+    return
+  }
   const valid = await validateCurrentStep()
   if (!valid) return
 
@@ -810,6 +951,16 @@ const nextStep = async () => {
       return
     }
   }
+
+  if (
+    currentStep.value === 4 &&
+    form.pof_amount_requested &&
+    !form.pof_facility
+  ) {
+    showSnack('Please select a bank for PoF request')
+    return
+  }
+
   currentStep.value++
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
@@ -825,26 +976,31 @@ const prevStep = () => {
 const saveApplicationDraft = async () => {
   saving.value = true
   try {
-    const { data, error } = await supabase.rpc('upsert_customer_application', {
-      p_application_id:       applicationId.value,
-      p_first_name:           form.first_name,
-      p_middle_name:          form.middle_name || null,
-      p_last_name:            form.last_name,
-      p_sex:                  form.sex,
-      p_religion:             form.religion,
-      p_bvn:                  form.bvn,
-      p_nin:                  form.nin,
-      p_date_of_birth:        form.date_of_birth,
-      p_place_of_birth:       form.place_of_birth,
-      p_state_of_origin:      form.state_of_origin,
-      p_lga_of_origin:        form.lga_of_origin,
-      p_phone_number:         '+234' + form.phone_number,
-      p_email:                form.email,
-      p_mothers_maiden_name:  form.mothers_maiden_name,
-      p_bvn_phone_accessible: form.bvn_phone_accessible,
-      p_bvn_phone_number:     form.bvn_phone_number ? '+234' + form.bvn_phone_number : null,
-      p_pof_amount_requested: form.pof_amount_requested || null,
-    })
+    console.log({
+  applicationId: applicationId.value,
+  pof_facility: form.pof_facility
+})
+    const { data, error } = await supabase.rpc('upsert_customer_application_v1', {
+  p_id: applicationId.value,  
+  p_first_name: form.first_name,
+  p_middle_name: form.middle_name || null,
+  p_last_name: form.last_name,
+  p_sex: form.sex,
+  p_religion: form.religion,
+  p_bvn: form.bvn,
+  p_nin: form.nin,
+  p_date_of_birth: form.date_of_birth,
+  p_place_of_birth: form.place_of_birth,
+  p_state_of_origin: form.state_of_origin,
+  p_lga_of_origin: form.lga_of_origin,
+  p_phone_number: form.phone_number ? '+234' + form.phone_number : null,
+  p_email: form.email,
+  p_mothers_maiden_name: form.mothers_maiden_name,
+  p_bvn_phone_accessible: form.bvn_phone_accessible,
+  p_bvn_phone_number: form.bvn_phone_number ? '+234' + form.bvn_phone_number : null,
+  p_pof_amount_requested: form.pof_amount_requested || null,
+  p_pof_facility: form.pof_facility || null,
+})
     console.log("customer application:", data)
     if (error) throw error
     applicationId.value = data
@@ -859,10 +1015,19 @@ const saveApplicationDraft = async () => {
 
 // ── File upload ───────────────────────────────────────────────────────────────
 const triggerFileInput = (key) => fileInputs[key]?.click()
+const sanitizeFileName = (name) => {
+  return name
+    .replace(/\s+/g, '_')            // spaces → _
+    .replace(/[^a-zA-Z0-9._-]/g, '') // remove weird chars
+}
+
 
 const handleFileSelect = async (event, key, docType) => {
+  
   const file = event.target.files[0]
+  
   if (!file) return
+  const safeFileName = sanitizeFileName(file.name)
   if (file.size > 5 * 1024 * 1024) {
     uploadErrors[key] = 'File too large. Maximum size is 5MB.'
     return
@@ -875,7 +1040,7 @@ const handleFileSelect = async (event, key, docType) => {
     const { data: rpcData, error: rpcError } = await supabase.rpc('upload_kyc_document', {
       p_application_id:  applicationId.value,
       p_doc_type:        docType,
-      p_file_name:       file.name,
+      p_file_name:       safeFileName,
       p_mime_type:       file.type,
       p_file_size_bytes: file.size,
     })
@@ -887,6 +1052,7 @@ const handleFileSelect = async (event, key, docType) => {
       .from(bucket || 'kyc-documents')
       .createSignedUploadUrl(storagePath)
     if (signedError) throw signedError
+    console.log("error:", signedError)
 
     const uploadRes = await fetch(signedData.signedUrl, {
       method: 'PUT',
@@ -929,6 +1095,7 @@ const submitApplication = async () => {
       p_application_id:       applicationId.value,
       p_full_address:         form.address.full_address,
       p_town_village:         form.address.town_village,
+      p_lga:         form.address.lga,
       p_address_state:        form.address.state,
       p_roof_color:           form.address.roof_color,
       p_gate_color:           form.address.gate_color,
@@ -939,6 +1106,7 @@ const submitApplication = async () => {
       p_nok_relationship:     form.next_of_kin.relationship,
       p_nok_dob:              form.next_of_kin.date_of_birth,
       p_nok_place_of_birth:   form.next_of_kin.place_of_birth,
+      p_nok_address:   form.next_of_kin.address,
       p_nok_phone:            '+234' + form.next_of_kin.phone_number,
       p_employment_status:    form.employment.employment_status,
       p_employer_name:        form.employment.employer_name    || null,
