@@ -83,13 +83,13 @@
 </v-card-text>
 
     <v-card-actions class="justify-end mt-4">
-      <v-btn
+      <!-- <v-btn
         variant="text"
         color="grey"
         @click="showDisclaimer = false"
       >
         Cancel
-      </v-btn>
+      </v-btn> -->
 
       <v-btn
         :disabled="!scrolledToBottom"
@@ -122,7 +122,54 @@
               <span class="ob-section-num">01</span>
               Personal Information
             </div>
-            <div class="ob-grid-3">
+            <div class="ob-grid-2">
+              <v-text-field
+                v-model="form.bvn"
+                label="BVN (Bank Verification Number)"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required, bvnRule]"
+                maxlength="11"
+                hint="11-digit BVN"
+                persistent-hint
+                class="ob-field"
+              />
+              <v-text-field
+                v-model="form.nin"
+                label="NIN (National Identification Number)"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required, ninRule]"
+                maxlength="11"
+                hint="11-digit NIN"
+                persistent-hint
+                class="ob-field"
+              />
+            </div>
+
+            <div class="ob-card-info">
+              <div class="ob-card-info-title">
+                <v-icon size="18" class="mr-1">mdi-sim-outline</v-icon>
+                BVN Phone Number Access
+              </div>
+              <div class="ob-card-info-sub">The phone number linked to your BVN must remain active. Account opening pulls your BVN details during generation.</div>
+              <v-radio-group v-model="form.bvn_phone_accessible" :rules="[required]" hide-details="auto" class="mt-2">
+                <v-radio label="Yes, I have access to my BVN phone number" :value="true" color="primary" />
+                <v-radio label="No, I don't have access" :value="false" color="error" />
+              </v-radio-group>
+              <v-text-field
+                v-if="form.bvn_phone_accessible === true"
+                v-model="form.bvn_phone_number"
+                label="Confirm BVN Phone Number"
+                variant="outlined"
+                density="comfortable"
+                prefix="+234"
+                maxlength="10"
+                :rules="[required, phoneRule]"
+                class="ob-field mt-3"
+              />
+            </div>
+            <div class="ob-grid-3 mt-4">
               <v-text-field
                 v-model="form.first_name"
                 label="First Name"
@@ -239,53 +286,7 @@
               />
             </div>
 
-            <div class="ob-grid-2">
-              <v-text-field
-                v-model="form.bvn"
-                label="BVN (Bank Verification Number)"
-                variant="outlined"
-                density="comfortable"
-                :rules="[required, bvnRule]"
-                maxlength="11"
-                hint="11-digit BVN"
-                persistent-hint
-                class="ob-field"
-              />
-              <v-text-field
-                v-model="form.nin"
-                label="NIN (National Identification Number)"
-                variant="outlined"
-                density="comfortable"
-                :rules="[required, ninRule]"
-                maxlength="11"
-                hint="11-digit NIN"
-                persistent-hint
-                class="ob-field"
-              />
-            </div>
-
-            <div class="ob-card-info">
-              <div class="ob-card-info-title">
-                <v-icon size="18" class="mr-1">mdi-sim-outline</v-icon>
-                BVN Phone Number Access
-              </div>
-              <div class="ob-card-info-sub">The phone number linked to your BVN must remain active. Account opening pulls your BVN details during generation.</div>
-              <v-radio-group v-model="form.bvn_phone_accessible" :rules="[required]" hide-details="auto" class="mt-2">
-                <v-radio label="Yes, I have access to my BVN phone number" :value="true" color="primary" />
-                <v-radio label="No, I don't have access" :value="false" color="error" />
-              </v-radio-group>
-              <v-text-field
-                v-if="form.bvn_phone_accessible === true"
-                v-model="form.bvn_phone_number"
-                label="Confirm BVN Phone Number"
-                variant="outlined"
-                density="comfortable"
-                prefix="+234"
-                maxlength="10"
-                :rules="[required, phoneRule]"
-                class="ob-field mt-3"
-              />
-            </div>
+            
           </div>
         </v-form>
 
@@ -469,6 +470,14 @@
               <v-text-field
                 v-model="form.employment.employer_name"
                 label="Name of Employer"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="ob-field"
+              />
+              <v-text-field
+                v-model="form.employment.employer_address"
+                label="Address of Employer"
                 variant="outlined"
                 density="comfortable"
                 :rules="[required]"
@@ -732,7 +741,7 @@
               <span class="ob-ref-label">Reference Number</span>
               <span class="ob-ref-value">{{ submittedRef }}</span>
             </div>
-            <p class="ob-success-hint">Your account number will be issued within <strong>2–4 hours</strong>. You will be notified via the phone number and email provided.</p>
+            <p class="ob-success-hint">Your account number will be issued within <strong>2 – 24 hours</strong>. You will be notified via the phone number and email provided.</p>
           </v-card-text>
           <v-card-actions class="justify-center pb-4">
             <v-btn color="primary" variant="flat" @click="resetForm">Start New Application</v-btn>
@@ -780,7 +789,7 @@ const fetchBanks = async () => {
     .from('banks')
     .select('id, name')
     .order('name')
-
+  console.log('data:', data)
   if (!error) banks.value = data || []
   else showSnack('Failed to load banks')
 
@@ -854,6 +863,7 @@ const form = reactive({
   employment: {
     employment_status: null,
     employer_name: '',
+    employer_address: '',
     school_name: '',
     business_type: '',
     business_location: '',
@@ -1110,6 +1120,7 @@ const submitApplication = async () => {
       p_nok_phone:            '+234' + form.next_of_kin.phone_number,
       p_employment_status:    form.employment.employment_status,
       p_employer_name:        form.employment.employer_name    || null,
+      p_employer_address:        form.employment.employer_address    || null,
       p_school_name:          form.employment.school_name      || null,
       p_business_type:        form.employment.business_type    || null,
       p_business_location:    form.employment.business_location || null,
@@ -1140,9 +1151,9 @@ const resetForm = () => {
     lga_of_origin: '', phone_number: '', email: '', mothers_maiden_name: '',
     bvn_phone_accessible: null, bvn_phone_number: '', pof_amount_requested: null,
     declaration: false,
-    address: { full_address: '', town_village: '', state: '', roof_color: '', gate_color: '', nearest_landmark: '', building_type: null, bus_stop_description: '' },
-    next_of_kin: { full_name: '', relationship: null, date_of_birth: '', place_of_birth: '', phone_number: '' },
-    employment: { employment_status: null, employer_name: '', school_name: '', business_type: '', business_location: '', additional_info: '' },
+    address: { full_address: '', town_village: '', lga: '',  state: '', roof_color: '', gate_color: '', nearest_landmark: '', building_type: null, bus_stop_description: '' },
+    next_of_kin: { full_name: '', relationship: null, date_of_birth: '', place_of_birth: '', phone_number: '', address: '' },
+    employment: { employment_status: null, employer_name: '', employer_address: '', school_name: '', business_type: '', business_location: '', additional_info: '' },
   })
   Object.keys(uploads).forEach(k => delete uploads[k])
   Object.keys(uploadErrors).forEach(k => delete uploadErrors[k])
