@@ -216,15 +216,30 @@
             
 
             <div class="ob-grid-3">
-              <v-text-field
-                v-model="form.date_of_birth"
-                label="Date of Birth"
-                variant="outlined"
-                density="comfortable"
-                type="date"
-                :rules="[required]"
-                class="ob-field"
-              />
+          <v-menu
+  v-model="dobMenu"
+  :close-on-content-click="false"
+  transition="scale-transition"
+  offset-y
+  min-width="auto"
+>
+  <template #activator="{ props }">
+    <v-text-field
+      v-model="form.date_of_birth"
+      label="Date of Birth"
+      variant="outlined"
+      readonly
+      v-bind="props"
+      :rules="[required, isAdultRule]"
+    />
+  </template>
+
+  <v-date-picker
+    v-model="dob"
+    :max="maxAllowedDate"
+    @update:model-value="onDobSelect"
+  />
+</v-menu>
               <v-text-field
                 v-model="form.place_of_birth"
                 label="Place of Birth"
@@ -410,15 +425,28 @@
               />
             </div>
             <div class="ob-grid-2">
-              <v-text-field
-                v-model="form.next_of_kin.date_of_birth"
-                label="Date of Birth"
-                type="date"
-                variant="outlined"
-                density="comfortable"
-                :rules="[required]"
-                class="ob-field"
-              />
+              <v-menu
+  v-model="nokDobMenu"
+  :close-on-content-click="false"
+  transition="scale-transition"
+  offset-y
+  min-width="auto"
+>
+  <template #activator="{ props }">
+    <v-text-field
+      v-model="form.next_of_kin.date_of_birth"
+      label="Next of Kin Date of Birth"
+      variant="outlined"
+      readonly
+      v-bind="props"
+    />
+  </template>
+
+  <v-date-picker
+    v-model="nokDob"
+    @update:model-value="onNokDobSelect"
+  />
+</v-menu>
               <v-text-field
                 v-model="form.next_of_kin.place_of_birth"
                 label="Place of Birth"
@@ -584,12 +612,12 @@
               PoF / PoE Request (Optional)
             </div>
             <v-text-field
-              v-model="form.pof_amount_requested"
+             v-model="pofAmount"
               label="Amount in Naira Requested"
               variant="outlined"
               density="comfortable"
               prefix="₦"
-              type="number"
+              
               class="ob-field"
               style="max-width: 380px"
             />
@@ -763,12 +791,63 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { supabase } from '@/services/supabase'
+import { useFormattedFields } from '@/composables/useFormattedFields'
+
+
 const showDisclaimer = ref(false)
 const disclaimerAccepted = ref(false)
 const acceptDisclaimer = () => {
   disclaimerAccepted.value = true
   showDisclaimer.value = false
 }
+const dobMenu = ref(false)
+const dob = ref(null) // temp picker value only
+
+  const maxAllowedDate = computed(() => {
+  const today = new Date()
+  today.setFullYear(today.getFullYear() - 18)
+  return today.toISOString().split('T')[0]
+})
+const isAdultRule = (v) => {
+  if (!v) return 'Date of birth is required'
+
+  const dobDate = new Date(v)
+  const today = new Date()
+
+  const age = today.getFullYear() - dobDate.getFullYear()
+  const m = today.getMonth() - dobDate.getMonth()
+
+  const realAge =
+    m < 0 || (m === 0 && today.getDate() < dobDate.getDate())
+      ? age - 1
+      : age
+
+  return realAge >= 18 || 'You must be at least 18 years old'
+}
+const onDobSelect = (val) => {
+  if (!val) return
+
+  const date = new Date(val)
+
+  // store ONLY clean ISO format
+  form.date_of_birth = date.toISOString().split('T')[0]
+
+  dobMenu.value = false
+}
+
+const nokDobMenu = ref(false)
+const nokDob = ref(null) // temp picker value
+
+const onNokDobSelect = (val) => {
+  if (!val) return
+
+  const date = new Date(val)
+
+  form.next_of_kin.date_of_birth = date.toISOString().split('T')[0]
+
+  nokDobMenu.value = false
+}
+
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 const steps = [
@@ -870,7 +949,11 @@ const form = reactive({
     additional_info: '',
   },
 })
-
+const pofAmount = useFormattedFields(
+  { value: form },
+  'pof_amount_requested',
+  { currency: true }
+)
 // ── KYC file tracking ─────────────────────────────────────────────────────────
 const uploads      = reactive({})
 const uploadErrors = reactive({})
@@ -1101,7 +1184,7 @@ const submitApplication = async () => {
   }
   submitting.value = true
   try {
-    const { data, error } = await supabase.rpc('submit_full_application', {
+    const { data, error } = await supabase.rpc('submit_full_applicationv4', {
       p_application_id:       applicationId.value,
       p_full_address:         form.address.full_address,
       p_town_village:         form.address.town_village,
@@ -1135,9 +1218,15 @@ const submitApplication = async () => {
     submitting.value = false
   }
 }
+const resetPoF = () => {
+  form.pof_amount_requested = null
+  form.pof_facility = null
+  pofAmount.value = ''
+}
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
 const resetForm = () => {
+  resetPoF()
   showSuccess.value   = false
   applicationId.value = null
   currentStep.value   = 0
@@ -1154,6 +1243,8 @@ const resetForm = () => {
     address: { full_address: '', town_village: '', lga: '',  state: '', roof_color: '', gate_color: '', nearest_landmark: '', building_type: null, bus_stop_description: '' },
     next_of_kin: { full_name: '', relationship: null, date_of_birth: '', place_of_birth: '', phone_number: '', address: '' },
     employment: { employment_status: null, employer_name: '', employer_address: '', school_name: '', business_type: '', business_location: '', additional_info: '' },
+
+   
   })
   Object.keys(uploads).forEach(k => delete uploads[k])
   Object.keys(uploadErrors).forEach(k => delete uploadErrors[k])
