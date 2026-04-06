@@ -616,7 +616,7 @@
               label="Amount in Naira Requested"
               variant="outlined"
               density="comfortable"
-              prefix="₦"
+              
               
               class="ob-field"
               style="max-width: 380px"
@@ -773,6 +773,15 @@
           </v-card-text>
           <v-card-actions class="justify-center pb-4">
             <v-btn color="primary" variant="flat" @click="resetForm">Start New Application</v-btn>
+           <a
+  href="https://paratusbanca.com"
+  
+  rel="noopener noreferrer"
+>
+  <v-btn color="primary" variant="text">
+    Return to Home
+  </v-btn>
+</a>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -789,7 +798,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { supabase } from '@/services/supabase'
 import { useFormattedFields } from '@/composables/useFormattedFields'
 
@@ -861,21 +870,34 @@ const steps = [
 const currentStep = ref(0)
 const banks = ref([])
 const banksLoading = ref(false)
-const fetchBanks = async () => {
+const fetchFacilities = async () => {
   banksLoading.value = true
 
   const { data, error } = await supabase
-    .from('banks')
-    .select('id, name')
-    .order('name')
-  console.log('data:', data)
-  if (!error) banks.value = data || []
-  else showSnack('Failed to load banks')
+    .from('bank_facilities')
+    .select(`
+      id,
+      facility_type,
+      facility_amount,
+      borrowing_rate,
+      banks:bank_id (name)
+    `)
+    .eq('status', 'active')
+
+  if (!error) {
+    banks.value = (data || []).map(f => ({
+      id: f.id,
+      name: f.banks?.name || 'Unknown Bank'
+    }))
+    console.log("facilities:", banks.value)
+  } else {
+    showSnack('Failed to load facilities')
+  }
 
   banksLoading.value = false
 }
 onMounted(() => {
-  fetchBanks()
+  fetchFacilities()
   showDisclaimer.value = true
 })
 // ── One ref per step form ─────────────────────────────────────────────────────
@@ -1045,14 +1067,17 @@ const nextStep = async () => {
     }
   }
 
-  if (
-    currentStep.value === 4 &&
-    form.pof_amount_requested &&
-    !form.pof_facility
-  ) {
-    showSnack('Please select a bank for PoF request')
-    return
+ if (currentStep.value === 4) {
+  if (form.pof_amount_requested && !form.pof_facility) {
+    showSnack('Please select a facility')
+    return false
   }
+
+  if (form.pof_facility && !form.pof_amount_requested) {
+    showSnack('Please enter PoF amount')
+    return false
+  }
+}
 
   currentStep.value++
   window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -1064,11 +1089,53 @@ const prevStep = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
+const savePoF = async () => {
+  if (!applicationId.value) await saveApplicationDraft()
+  const payload = {
+ p_application_id: applicationId.value,
+    p_pof_amount: form.pof_amount_requested,
+    p_pof_facility: form.pof_facility,
+}
+  console.log("payload",payload )
+  const {data, error } = await supabase.rpc('update_customer_pof', {
+    p_application_id: applicationId.value,
+    p_pof_amount: form.pof_amount_requested,
+    p_pof_facility: form.pof_facility,
+  })
+  console.log('data:', data)
 
+  if (error) {
+    showSnack('Failed to save PoF: ' + error.message)
+    throw error
+  }
+}
 // ── Save draft ────────────────────────────────────────────────────────────────
 const saveApplicationDraft = async () => {
   saving.value = true
+ 
   try {
+     const payload = {
+     p_id: applicationId.value,  
+  p_first_name: form.first_name,
+  p_middle_name: form.middle_name || null,
+  p_last_name: form.last_name,
+  p_sex: form.sex,
+  p_religion: form.religion,
+  p_bvn: form.bvn,
+  p_nin: form.nin,
+  p_date_of_birth: form.date_of_birth,
+  p_place_of_birth: form.place_of_birth,
+  p_state_of_origin: form.state_of_origin,
+  p_lga_of_origin: form.lga_of_origin,
+  p_phone_number: form.phone_number ? '+234' + form.phone_number : null,
+  p_email: form.email,
+  p_mothers_maiden_name: form.mothers_maiden_name,
+  p_bvn_phone_accessible: form.bvn_phone_accessible,
+  p_bvn_phone_number: form.bvn_phone_number ? '+234' + form.bvn_phone_number : null,
+  // p_pof_amount_requested: form.pof_amount_requested || null,
+  // p_pof_facility: form.pof_facility || null,
+  }
+  console.log("upsert application payload:", payload)
     console.log({
   applicationId: applicationId.value,
   pof_facility: form.pof_facility
@@ -1105,7 +1172,23 @@ const saveApplicationDraft = async () => {
     saving.value = false
   }
 }
+watch(
+  () => form.pof_facility,
+  async (val) => {
+    if (val && form.pof_amount_requested) {
+      await savePoF()
+    }
+  }
+)
 
+watch(
+  () => form.pof_amount_requested,
+  async (val) => {
+    if (val && form.pof_facility) {
+      await savePoF()
+    }
+  }
+)
 // ── File upload ───────────────────────────────────────────────────────────────
 const triggerFileInput = (key) => fileInputs[key]?.click()
 const sanitizeFileName = (name) => {
@@ -1184,7 +1267,7 @@ const submitApplication = async () => {
   }
   submitting.value = true
   try {
-    const { data, error } = await supabase.rpc('submit_full_applicationv4', {
+    const { data, error } = await supabase.rpc('submit_full_applicationv5', {
       p_application_id:       applicationId.value,
       p_full_address:         form.address.full_address,
       p_town_village:         form.address.town_village,
@@ -1221,7 +1304,7 @@ const submitApplication = async () => {
 const resetPoF = () => {
   form.pof_amount_requested = null
   form.pof_facility = null
-  pofAmount.value = ''
+  
 }
 
 // ── Reset ─────────────────────────────────────────────────────────────────────
