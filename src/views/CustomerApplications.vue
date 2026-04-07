@@ -106,9 +106,19 @@
       <!-- Notice banner -->
        <div class="ob-body">
         <div class="ob-notice">
-        <v-icon class="ob-notice-icon" size="18">mdi-information-outline</v-icon>
-        <span>All KYC documents will be thoroughly reviewed before your account number is issued — within <strong>2 – 24 hours</strong> of submission.</span>
-      </div>
+  <v-icon class="ob-notice-icon" size="18">mdi-information-outline</v-icon>
+
+  <span class="ob-notice-text">
+    <span>
+      All KYC documents will be thoroughly reviewed before your account number is issued — usually within
+      <strong>2 – 24 hours</strong> of submission.
+    </span>
+
+    <span class="ob-notice-sub">
+      The application is simple and takes less than <strong>10 minutes</strong> to complete.
+    </span>
+  </span>
+</div>
        </div>
       
 
@@ -639,7 +649,7 @@
         <div v-show="currentStep === 5">
           <div class="ob-section">
             <div class="ob-section-title">
-              <span class="ob-section-num">07</span>
+              <span class="ob-section-num">06</span>
               Review & Submit
             </div>
 
@@ -1543,5 +1553,15 @@ const relationships = [
 .ml-auto { margin-left: auto; }
 .v-btn{
     text-transform: none;
+}
+.ob-notice-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* controls spacing between the two lines */
+}
+
+.ob-notice-sub {
+  color: #1e40af;
+  font-size: 13px;
 }
 </style>
