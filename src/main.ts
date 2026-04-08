@@ -9,7 +9,7 @@ import router from './router'
 import 'aos/dist/aos.css'
 import AOS from 'aos'
 
-// Import Element Plus and its styles
+// Import Element Plus and its stylesa
 import ElementPlus from 'element-plus';
 import 'element-plus/dist/index.css';
 

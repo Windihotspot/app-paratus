@@ -245,6 +245,7 @@
   </template>
 
   <v-date-picker
+  color="red"
     v-model="dob"
     :max="maxAllowedDate"
     @update:model-value="onDobSelect"
@@ -453,6 +454,7 @@
   </template>
 
   <v-date-picker
+   color="red"
     v-model="nokDob"
     @update:model-value="onNokDobSelect"
   />
