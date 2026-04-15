@@ -906,8 +906,11 @@ const onDobSelect = (val) => {
 
   const date = new Date(val)
 
-  // store ONLY clean ISO format
-  form.date_of_birth = date.toISOString().split('T')[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  form.date_of_birth = `${year}-${month}-${day}`
 
   dobMenu.value = false
 }
@@ -915,12 +918,25 @@ const onDobSelect = (val) => {
 const nokDobMenu = ref(false)
 const nokDob = ref(null) // temp picker value
 
+// const onNokDobSelect = (val) => {
+//   if (!val) return
+
+//   const date = new Date(val)
+
+//   form.next_of_kin.date_of_birth = date.toISOString().split('T')[0]
+
+//   nokDobMenu.value = false
+// }
 const onNokDobSelect = (val) => {
   if (!val) return
 
   const date = new Date(val)
 
-  form.next_of_kin.date_of_birth = date.toISOString().split('T')[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+
+  form.next_of_kin.date_of_birth = `${year}-${month}-${day}`
 
   nokDobMenu.value = false
 }
@@ -1399,20 +1415,17 @@ const submitApplication = async () => {
 
     // 🚀 CALL EDGE FUNCTION (SEND EMAIL)
     try {
-      await fetch(
-        'https://ytvqldflnqwflahxjjzu.supabase.co/functions/v1/New-client-Email-Notification',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            application_id: applicationId.value,
-            performed_by: 'applicant' // optional
-          })
-        }
-      )
+      await fetch('https://ytvqldflnqwflahxjjzu.supabase.co/functions/v1/bright-responder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          application_id: applicationId.value,
+          performed_by: 'applicant' // optional
+        })
+      })
     } catch (emailErr) {
       console.error('Email trigger failed:', emailErr)
       // ❗ Don't block user flow if email fails
