@@ -327,6 +327,15 @@
                 :rules="[required, emailRule]"
                 class="ob-field"
               />
+              <v-select
+                v-model="form.marital_status"
+                :items="maritalStatus"
+                label="Marital Status"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="ob-field"
+              />
             </div>
           </div>
         </v-form>
@@ -1025,6 +1034,7 @@ const form = reactive({
   mothers_maiden_name: '',
   bvn_phone_accessible: null,
   bvn_phone_number: '',
+  marital_status: '',
   pof_amount_requested: null,
   declaration: false,
   address: {
@@ -1250,6 +1260,7 @@ const saveApplicationDraft = async () => {
       p_email: form.email,
       p_mothers_maiden_name: form.mothers_maiden_name,
       p_bvn_phone_accessible: form.bvn_phone_accessible,
+      p_marital_status: form.marital_status,
       p_bvn_phone_number: form.bvn_phone_number ? '+234' + form.bvn_phone_number : null
       // p_pof_amount_requested: form.pof_amount_requested || null,
       // p_pof_facility: form.pof_facility || null,
@@ -1259,7 +1270,7 @@ const saveApplicationDraft = async () => {
       applicationId: applicationId.value,
       pof_facility: form.pof_facility
     })
-    const { data, error } = await supabase.rpc('upsert_customer_application_v1', {
+    const { data, error } = await supabase.rpc('upsert_customer_application_v2', {
       p_id: applicationId.value,
       p_first_name: form.first_name,
       p_middle_name: form.middle_name || null,
@@ -1276,6 +1287,7 @@ const saveApplicationDraft = async () => {
       p_email: form.email,
       p_mothers_maiden_name: form.mothers_maiden_name,
       p_bvn_phone_accessible: form.bvn_phone_accessible,
+      p_marital_status: form.marital_status,
       p_bvn_phone_number: form.bvn_phone_number ? '+234' + form.bvn_phone_number : null,
       p_pof_amount_requested: form.pof_amount_requested || null,
       p_pof_facility: form.pof_facility || null
@@ -1466,6 +1478,7 @@ const resetForm = () => {
     phone_number: '',
     email: '',
     mothers_maiden_name: '',
+    marital_status: '',
     bvn_phone_accessible: null,
     bvn_phone_number: '',
     pof_amount_requested: null,
@@ -1504,6 +1517,7 @@ const resetForm = () => {
 }
 
 // ── Static data ───────────────────────────────────────────────────────────────
+const maritalStatus = ['Married', 'Single', 'Divorced', 'Separated', 'Widowed']
 const nigerianStates = [
   'Abia',
   'Adamawa',
