@@ -853,10 +853,15 @@
               notified via the phone number and email provided.
             </p>
           </v-card-text>
-          <v-card-actions class="justify-center pb-4">
-            <v-btn color="primary" variant="flat" @click="resetForm">Start New Application</v-btn>
-            <a href="https://paratusbanca.com" rel="noopener noreferrer">
-              <v-btn color="primary" variant="text"> Return to Home </v-btn>
+          <v-card-actions class="flex flex-col sm:flex-row justify-center items-center gap-3 pb-4">
+            <v-btn color="primary" variant="flat" class="w-full sm:w-auto" @click="resetForm">
+              Start New Application
+            </v-btn>
+
+            <a href="https://paratusbanca.com" rel="noopener noreferrer" class="w-full sm:w-auto">
+              <v-btn color="primary" variant="text" class="w-full sm:w-auto">
+                Return to Home
+              </v-btn>
             </a>
           </v-card-actions>
         </v-card>
@@ -1422,7 +1427,9 @@ const submitApplication = async () => {
       p_additional_info: form.employment.additional_info || null
     })
     if (error) throw error
-    submittedRef.value = data
+    submittedRef.value = [form.first_name, form.middle_name, form.last_name]
+      .filter(Boolean)
+      .join(' ')
     showSuccess.value = true
 
     // 🚀 CALL EDGE FUNCTION (SEND EMAIL)
