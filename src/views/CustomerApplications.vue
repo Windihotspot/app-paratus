@@ -336,6 +336,14 @@
                 :rules="[required]"
                 class="ob-field"
               />
+               <v-text-field
+                v-model="form.agent"
+                label="Agent/Direct contact"
+                variant="outlined"
+                density="comfortable"
+                :rules="[required]"
+                class="ob-field"
+              />
             </div>
           </div>
         </v-form>
@@ -1040,6 +1048,7 @@ const form = reactive({
   bvn_phone_accessible: null,
   bvn_phone_number: '',
   marital_status: '',
+  agent: '',
   pof_amount_requested: null,
   declaration: false,
   address: {
@@ -1266,6 +1275,7 @@ const saveApplicationDraft = async () => {
       p_mothers_maiden_name: form.mothers_maiden_name,
       p_bvn_phone_accessible: form.bvn_phone_accessible,
       p_marital_status: form.marital_status,
+      p_agent: form.agent,
       p_bvn_phone_number: form.bvn_phone_number ? '+234' + form.bvn_phone_number : null
       // p_pof_amount_requested: form.pof_amount_requested || null,
       // p_pof_facility: form.pof_facility || null,
@@ -1293,6 +1303,7 @@ const saveApplicationDraft = async () => {
       p_mothers_maiden_name: form.mothers_maiden_name,
       p_bvn_phone_accessible: form.bvn_phone_accessible,
       p_marital_status: form.marital_status,
+      p_agent: form.agent,
       p_bvn_phone_number: form.bvn_phone_number ? '+234' + form.bvn_phone_number : null,
       p_pof_amount_requested: form.pof_amount_requested || null,
       p_pof_facility: form.pof_facility || null
